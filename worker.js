@@ -42,7 +42,7 @@ function handleOptions(request) {
 // 添加 CORS 頭部到響應
 function addCorsHeaders(response, origin) {
   const headers = new Headers(response.headers);
-  headers.set('Access-Control-Allow-Origin': ALLOWED_ORIGINS);
+  headers.set('Access-Control-Allow-Origin', ALLOWED_ORIGINS);
   
   return new Response(response.body, {
     status: response.status,
