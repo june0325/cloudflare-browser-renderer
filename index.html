@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>網頁渲染服務</title>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --secondary-color: #f3f4f6;
+            --text-color: #1f2937;
+            --border-color: #d1d5db;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f9fafb;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        header {
+            background-color: white;
+            box-shadow: var(--shadow);
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .logo svg {
+            margin-right: 0.5rem;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-color);
+        }
+        
+        h2 {
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        input[type="text"], input[type="url"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            transition: border-color 0.15s ease-in-out;
+        }
+        
+        input[type="text"]:focus, input[type="url"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.15s ease-in-out;
+            border: none;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e5e7eb;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 0.375rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .alert-success {
+            background-color: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success-color);
+            color: var(--success-color);
+        }
+        
+        .alert-error {
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--error-color);
+            color: var(--error-color);
+        }
+        
+        .result-container {
+            margin-top: 2rem;
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .result-frame {
+            width: 100%;
+            height: 600px;
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .loading svg {
+            animation: spin 1s linear infinite;
+            width: 2rem;
+            height: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .history {
+            margin-top: 2rem;
+        }
+        
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .history-url {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-right: 1rem;
+        }
+        
+        .history-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 2rem;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            header .container {
+                padding: 0 1rem;
+            }
+            
+            .card {
+                padding: 1.5rem;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .result-frame {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                    <path d="M2 17l10 5 10-5"></path>
+                    <path d="M2 12l10 5 10-5"></path>
+                </svg>
+                網頁渲染服務
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="card">
+            <h1>網頁渲染工具</h1>
+            <p>輸入您想要渲染的網頁 URL，我們的 Cloudflare Worker 將幫您渲染頁面內容，並繞過常見的反爬蟲保護。</p>
+            
+            <div id="alert" style="display: none;" class="alert"></div>
+            
+            <form id="render-form" class="form">
+                <div class="form-group">
+                    <label for="url">網頁 URL</label>
+                    <input type="url" id="url" name="url" placeholder="https://example.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="worker-url">Worker URL</label>
+                    <input type="url" id="worker-url" name="worker-url" placeholder="https://your-worker.your-account.workers.dev" required>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" id="clear-btn" class="btn btn-secondary">清除</button>
+                    <button type="submit" id="render-btn" class="btn btn-primary">渲染網頁</button>
+                </div>
+            </form>
+        </div>
+        
+        <div id="loading" class="loading">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="2" x2="12" y2="6"></line>
+                <line x1="12" y1="18" x2="12" y2="22"></line>
+                <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+                <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+                <line x1="2" y1="12" x2="6" y2="12"></line>
+                <line x1="18" y1="12" x2="22" y2="12"></line>
+                <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+                <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+            </svg>
+            <p>正在渲染網頁，請稍候...</p>
+        </div>
+        
+        <div id="result-container" class="result-container" style="display: none;">
+            <div class="result-header">
+                <h2>渲染結果</h2>
+                <div>
+                    <button id="open-new-tab" class="btn btn-secondary">在新標籤頁中打開</button>
+                </div>
+            </div>
+            <iframe id="result-frame" class="result-frame" sandbox="allow-same-origin allow-scripts"></iframe>
+        </div>
+        
+        <div class="card history">
+            <h2>歷史記錄</h2>
+            <div id="history-list"></div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>© 2025 網頁渲染服務 | 此工具僅供學習和研究使用</p>
+        </div>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const renderForm = document.getElementById('render-form');
+            const urlInput = document.getElementById('url');
+            const workerUrlInput = document.getElementById('worker-url');
+            const clearBtn = document.getElementById('clear-btn');
+            const renderBtn = document.getElementById('render-btn');
+            const loading = document.getElementById('loading');
+            const resultContainer = document.getElementById('result-container');
+            const resultFrame = document.getElementById('result-frame');
+            const openNewTabBtn = document.getElementById('open-new-tab');
+            const historyList = document.getElementById('history-list');
+            const alert = document.getElementById('alert');
+            
+            // 從本地存儲加載歷史記錄
+            let history = JSON.parse(localStorage.getItem('renderHistory')) || [];
+            let currentWorkerUrl = localStorage.getItem('workerUrl') || '';
+            
+            // 如果有保存的 Worker URL，則填充到輸入框
+            if (currentWorkerUrl) {
+                workerUrlInput.value = currentWorkerUrl;
+            }
+            
+            // 渲染歷史記錄
+            function renderHistory() {
+                historyList.innerHTML = '';
+                
+                if (history.length === 0) {
+                    historyList.innerHTML = '<p style="padding: 1rem; text-align: center;">尚無歷史記錄</p>';
+                    return;
+                }
+                
+                history.forEach((item, index) => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'history-item';
+                    
+                    const urlSpan = document.createElement('span');
+                    urlSpan.className = 'history-url';
+                    urlSpan.textContent = item.url;
+                    
+                    const actionsDiv = document.createElement('div');
+                    actionsDiv.className = 'history-actions';
+                    
+                    const loadBtn = document.createElement('button');
+                    loadBtn.className = 'btn btn-secondary';
+                    loadBtn.textContent = '載入';
+                    loadBtn.addEventListener('click', () => {
+                        urlInput.value = item.url;
+                    });
+                    
+                    const renderBtn = document.createElement('button');
+                    renderBtn.className = 'btn btn-primary';
+                    renderBtn.textContent = '渲染';
+                    renderBtn.addEventListener('click', () => {
+                        urlInput.value = item.url;
+                        renderUrl();
+                    });
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'btn btn-secondary';
+                    deleteBtn.textContent = '刪除';
+                    deleteBtn.addEventListener('click', () => {
+                        history.splice(index, 1);
+                        localStorage.setItem('renderHistory', JSON.stringify(history));
+                        renderHistory();
+                    });
+                    
+                    actionsDiv.appendChild(loadBtn);
+                    actionsDiv.appendChild(renderBtn);
+                    actionsDiv.appendChild(deleteBtn);
+                    
+                    historyItem.appendChild(urlSpan);
+                    historyItem.appendChild(actionsDiv);
+                    
+                    historyList.appendChild(historyItem);
+                });
+            }
+            
+            // 顯示提醒
+            function showAlert(message, type) {
+                alert.className = `alert alert-${type}`;
+                alert.textContent = message;
+                alert.style.display = 'block';
+                
+                setTimeout(() => {
+                    alert.style.display = 'none';
+                }, 5000);
+            }
+            
+            // 渲染 URL
+            function renderUrl() {
+                const url = urlInput.value.trim();
+                const workerUrl = workerUrlInput.value.trim();
+                
+                if (!url) {
+                    showAlert('請輸入有效的 URL', 'error');
+                    return;
+                }
+                
+                if (!workerUrl) {
+                    showAlert('請輸入有效的 Worker URL', 'error');
+                    return;
+                }
+                
+                // 保存 Worker URL
+                localStorage.setItem('workerUrl', workerUrl);
+                currentWorkerUrl = workerUrl;
+                
+                // 添加到歷史記錄
+                if (!history.some(item => item.url === url)) {
+                    history.unshift({ url, timestamp: new Date().toISOString() });
+                    
+                    // 限制歷史記錄數量
+                    if (history.length > 10) {
+                        history.pop();
+                    }
+                    
+                    localStorage.setItem('renderHistory', JSON.stringify(history));
+                    renderHistory();
+                }
+                
+                // 顯示加載中
+                loading.style.display = 'block';
+                resultContainer.style.display = 'none';
+                
+                // 構建完整的 Worker URL
+                const fullWorkerUrl = `${workerUrl}?url=${encodeURIComponent(url)}`;
+                
+                // 設置 iframe 源
+                resultFrame.src = fullWorkerUrl;
+                
+                // 監聽 iframe 加載完成事件
+                resultFrame.onload = function() {
+                    loading.style.display = 'none';
+                    resultContainer.style.display = 'block';
+                };
+                
+                // 處理加載錯誤
+                resultFrame.onerror = function() {
+                    loading.style.display = 'none';
+                    showAlert('渲染失敗，請檢查 URL 和 Worker 設置', 'error');
+                };
+                
+                // 設置超時
+                setTimeout(() => {
+                    if (loading.style.display === 'block') {
+                        loading.style.display = 'none';
+                        showAlert('渲染超時，請檢查 URL 和 Worker 設置', 'error');
+                    }
+                }, 30000);
+            }
+            
+            // 表單提交事件
+            renderForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                renderUrl();
+            });
+            
+            // 清除按鈕事件
+            clearBtn.addEventListener('click', function() {
+                urlInput.value = '';
+                resultContainer.style.display = 'none';
+            });
+            
+            // 在新標籤頁中打開按鈕事件
+            openNewTabBtn.addEventListener('click', function() {
+                const url = urlInput.value.trim();
+                const workerUrl = workerUrlInput.value.trim();
+                
+                if (url && workerUrl) {
+                    const fullWorkerUrl = `${workerUrl}?url=${encodeURIComponent(url)}`;
+                    window.open(fullWorkerUrl, '_blank');
+                }
+            });
+            
+            // 初始化渲染歷史記錄
+            renderHistory();
+        });
+    </script>
+</body>
+</html>
