@@ -1,0 +1,11 @@
+name = "browser-renderer"
+main = "worker.js"
+compatibility_date = "2023-10-30"
+
+[vars]
+# 環境變數可以在這裡設置
+ALLOWED_ORIGINS = "*"
+
+# 觸發器設置
+[triggers]
+crons = []
